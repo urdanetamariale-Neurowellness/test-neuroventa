@@ -125,7 +125,7 @@
 <!-- ═══════════ BIENVENIDA ═══════════ -->
 <div id="screen-welcome">
     <div class="header">
-        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png" alt="NeuroWellness Learning"></div>
+        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logob.png" alt="NeuroWellness Learning"></div>
         <div class="header-label">Test de Neuroventas</div>
         <h1>Tu estilo de venta:<br>¿Tradicional o Neuroventa?</h1>
         <p>Descubre dónde estás y hacia dónde puedes crecer como asesor</p>
@@ -171,7 +171,7 @@
 <!-- ═══════════ TEST ═══════════ -->
 <div id="screen-test" class="hidden">
     <div class="header">
-        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png" alt="NeuroWellness Learning"></div>
+        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logob.png" alt="NeuroWellness Learning"></div>
         <h1>Test de Neuroventas</h1>
         <p>Responde desde cómo actúas realmente, no desde la respuesta "correcta"</p>
     </div>
@@ -188,7 +188,7 @@
 <!-- ═══════════ RESULTADOS ═══════════ -->
 <div id="screen-results" class="hidden">
     <div class="header">
-        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png" alt="NeuroWellness Learning"></div>
+        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logob.png" alt="NeuroWellness Learning"></div>
         <div class="header-label">Tus Resultados</div>
         <h1>Tu Estilo de Venta</h1>
         <p>Análisis personalizado basado en tus respuestas</p>
@@ -583,7 +583,7 @@ async function downloadPDF(){
     doc.setFillColor(20,35,58);
     doc.rect(0,0,210,35,'F');
     try {
-        const b = await fetch('https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png').then(r=>r.blob());
+        const b = await fetch('https://urdanetamariale-neurowellness.github.io/test-neuroventa/logob.png').then(r=>r.blob());
         doc.addImage(await blobToB64(b),'PNG',155,5,42,26);
     } catch(e){}
     doc.setTextColor(255,255,255);
