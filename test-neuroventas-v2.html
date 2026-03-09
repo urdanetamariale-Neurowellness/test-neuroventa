@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Neuroventas | NeuroWellness Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --azul:#14233A; --blush:#E9C8C8; --coral:#D99A8F;
+            --marfil:#F7F4F1; --niebla:#E6E2DE; --grafito:#2B2E33;
+            --gris:#4A4D53; --malva:#9B6D80; --salvia:#9DB2A2;
+        }
+        body { font-family:'Montserrat',sans-serif; background:var(--marfil); color:var(--gris); line-height:1.6; }
+        .container { max-width:860px; margin:0 auto; padding:2rem 1rem; }
+
+        .header {
+            background:var(--azul); border-radius:1.5rem 1.5rem 0 0;
+            padding:2.5rem 2rem 2rem; text-align:center;
+            position:relative; overflow:hidden;
+        }
+        .header::before { content:''; position:absolute; top:-60px; right:-60px; width:220px; height:220px; border-radius:50%; background:rgba(233,200,200,0.07); pointer-events:none; }
+        .header::after  { content:''; position:absolute; bottom:-40px; left:-40px; width:150px; height:150px; border-radius:50%; background:rgba(155,109,128,0.1); pointer-events:none; }
+
+        .logo-wrap { display:flex; justify-content:center; margin-bottom:1.2rem; }
+        .logo-wrap img { max-width:170px; height:auto; }
+
+        .header-label { display:inline-block; background:rgba(155,109,128,0.25); color:var(--blush); font-size:.75rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; padding:.35rem 1.1rem; border-radius:2rem; margin-bottom:1rem; }
+        .header h1 { font-size:clamp(1.35rem,3.5vw,1.9rem); font-weight:800; color:#fff; line-height:1.25; margin-bottom:.6rem; }
+        .header p { color:var(--blush); font-size:.88rem; opacity:.9; }
+
+        .card { background:#fff; border-radius:0 0 1.5rem 1.5rem; padding:2.5rem 2rem; box-shadow:0 8px 32px rgba(20,35,58,.09); margin-bottom:2rem; }
+
+        .context-block { background:var(--marfil); border-radius:1rem; padding:1.6rem 1.75rem; margin-bottom:1rem; border-left:4px solid var(--malva); }
+        .context-block h2 { font-size:1rem; font-weight:700; color:var(--azul); margin-bottom:.6rem; }
+        .context-block p { font-size:.92rem; line-height:1.8; color:var(--gris); }
+
+        .pills-row { display:flex; flex-wrap:wrap; gap:.6rem; margin:1.5rem 0; }
+        .pill { background:var(--blush); color:var(--azul); font-size:.78rem; font-weight:600; padding:.4rem 1rem; border-radius:2rem; }
+
+        .form-group { margin-bottom:1.1rem; }
+        .form-group label { display:block; font-size:.83rem; font-weight:600; color:var(--azul); margin-bottom:.4rem; }
+        .form-group input { width:100%; padding:.875rem 1rem; border:2px solid var(--niebla); border-radius:.75rem; font-family:'Montserrat',sans-serif; font-size:.93rem; color:var(--grafito); background:var(--marfil); transition:border-color .25s; outline:none; }
+        .form-group input:focus { border-color:var(--malva); background:#fff; }
+        .error-msg { font-size:.78rem; color:var(--coral); margin-top:.3rem; display:none; }
+
+        .section-header { display:flex; align-items:flex-start; gap:.75rem; background:var(--azul); color:#fff; padding:.85rem 1.25rem; border-radius:.75rem; margin:2rem 0 1.1rem; }
+        .section-icon { width:32px; height:32px; background:rgba(255,255,255,.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; margin-top:.15rem; }
+        .section-header-text { display:flex; flex-direction:column; gap:.2rem; }
+        .section-header h3 { font-size:.88rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+        .section-header span { font-size:.73rem; opacity:.75; font-weight:400; }
+
+        .question-card { border:2px solid var(--niebla); border-radius:1rem; padding:1.25rem 1.5rem; margin-bottom:1rem; transition:border-color .25s, box-shadow .25s; background:#fff; }
+        .question-card:hover { border-color:var(--malva); box-shadow:0 4px 16px rgba(155,109,128,.1); }
+        .question-card.answered { border-color:var(--salvia); background:#fafef9; }
+
+        .q-top { display:flex; align-items:flex-start; gap:.9rem; margin-bottom:1.1rem; }
+        .q-num { width:2rem; height:2rem; background:var(--blush); color:var(--azul); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:700; flex-shrink:0; }
+        .q-text { font-size:.88rem; font-weight:500; color:var(--azul); line-height:1.55; padding-top:.25rem; }
+
+        /* Escala de 4 opciones con texto personalizado */
+        .scale-grid { display:flex; flex-direction:column; gap:.45rem; }
+
+        .scale-opt input[type="radio"] { display:none; }
+        .scale-opt label { display:flex; align-items:center; gap:.65rem; padding:.75rem 1rem; border:2px solid var(--niebla); border-radius:.65rem; font-size:.82rem; font-weight:500; color:var(--gris); cursor:pointer; transition:all .22s; line-height:1.35; text-align:left; }
+        .scale-opt label::before { content:''; width:16px; height:16px; min-width:16px; border-radius:50%; border:2px solid var(--niebla); transition:all .22s; }
+        .scale-opt input:checked + label { background:rgba(155,109,128,.08); border-color:var(--malva); color:var(--azul); font-weight:600; }
+        .scale-opt input:checked + label::before { background:var(--malva); border-color:var(--malva); }
+        .scale-opt label:hover { border-color:var(--malva); background:rgba(155,109,128,.04); }
+
+        .progress-wrap { margin-bottom:2rem; }
+        .progress-text { text-align:center; font-size:.83rem; font-weight:600; color:var(--malva); margin-bottom:.5rem; }
+        .progress-bar { height:6px; background:var(--niebla); border-radius:10px; overflow:hidden; }
+        .progress-fill { height:100%; background:linear-gradient(90deg,var(--malva),var(--coral)); border-radius:10px; transition:width .4s ease; }
+
+        .btn { display:block; width:100%; max-width:420px; margin:0 auto; padding:1rem 2rem; border:none; border-radius:.75rem; font-family:'Montserrat',sans-serif; font-size:.97rem; font-weight:700; cursor:pointer; transition:all .25s; text-align:center; }
+        .btn-primary { background:var(--malva); color:#fff; }
+        .btn-primary:hover { background:#7d5766; transform:translateY(-2px); box-shadow:0 6px 18px rgba(155,109,128,.35); }
+        .btn-secondary { background:var(--coral); color:#fff; margin-top:.75rem; }
+        .btn-secondary:hover { background:#c7897e; transform:translateY(-2px); }
+
+        .btn-wa { background:#25D366; color:#fff; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:.6rem; max-width:420px; margin:0 auto; padding:1rem 2rem; border-radius:.75rem; font-family:'Montserrat',sans-serif; font-size:.97rem; font-weight:700; transition:all .25s; }
+        .btn-wa:hover { background:#1da851; transform:translateY(-2px); box-shadow:0 6px 18px rgba(37,211,102,.35); }
+
+        .result-hero { background:var(--azul); color:#fff; border-radius:1rem; padding:2rem; margin-bottom:1.5rem; text-align:center; position:relative; overflow:hidden; }
+        .result-hero::before { content:''; position:absolute; top:-50px; right:-50px; width:180px; height:180px; border-radius:50%; background:rgba(233,200,200,.08); }
+        .result-emoji { font-size:2.8rem; margin-bottom:.5rem; }
+        .result-profile { display:inline-block; background:rgba(155,109,128,.3); color:var(--blush); font-size:.73rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:.35rem 1rem; border-radius:2rem; margin-bottom:.75rem; }
+        .result-hero h2 { font-size:1.45rem; font-weight:800; margin-bottom:.5rem; }
+        .result-score { font-size:.83rem; color:var(--blush); opacity:.85; }
+
+        .result-section { background:var(--marfil); border-radius:1rem; padding:1.5rem; margin-bottom:1.25rem; }
+        .result-section h3 { font-size:.95rem; font-weight:700; color:var(--azul); margin-bottom:.75rem; }
+        .result-section > p { font-size:.9rem; line-height:1.8; color:var(--gris); }
+
+        .rec-card { background:#fff; border-left:4px solid var(--malva); border-radius:.75rem; padding:1rem 1.25rem; margin-bottom:.75rem; box-shadow:0 2px 8px rgba(20,35,58,.05); }
+        .rec-card h4 { font-size:.85rem; font-weight:700; color:var(--malva); margin-bottom:.35rem; display:flex; align-items:center; gap:.4rem; }
+        .rec-card .bar-wrap { height:5px; background:var(--niebla); border-radius:10px; margin-bottom:.55rem; overflow:hidden; }
+        .rec-card .bar-fill { height:100%; background:linear-gradient(90deg,var(--malva),var(--coral)); border-radius:10px; }
+        .rec-card p { font-size:.85rem; color:var(--gris); line-height:1.7; }
+
+        .chart-wrap { background:#fff; border:2px solid var(--niebla); border-radius:1rem; padding:1.5rem; margin-bottom:1.5rem; }
+        .chart-wrap h3 { text-align:center; font-size:.97rem; font-weight:700; color:var(--azul); margin-bottom:1rem; }
+
+        .wa-block { background:linear-gradient(135deg,var(--azul) 0%,#1e3a5a 100%); border-radius:1.25rem; padding:2rem; text-align:center; margin-top:2rem; }
+        .wa-block h3 { color:#fff; font-size:1.05rem; font-weight:700; margin-bottom:.6rem; }
+        .wa-block p { color:var(--blush); font-size:.87rem; margin-bottom:1.25rem; line-height:1.65; }
+
+        .copyright { text-align:center; font-size:.73rem; color:#aaa; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--niebla); }
+        .hidden { display:none; }
+
+        @media(max-width:600px){
+            .card { padding:1.25rem 1rem; border-radius:0 0 1rem 1rem; }
+            .header { padding:1.75rem 1rem 1.5rem; border-radius:1rem 1rem 0 0; }
+            .result-hero, .wa-block { padding:1.5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+<!-- ═══════════ BIENVENIDA ═══════════ -->
+<div id="screen-welcome">
+    <div class="header">
+        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png" alt="NeuroWellness Learning"></div>
+        <div class="header-label">Test de Neuroventas</div>
+        <h1>Tu estilo de venta:<br>¿Tradicional o Neuroventa?</h1>
+        <p>Descubre dónde estás y hacia dónde puedes crecer como asesor</p>
+    </div>
+    <div class="card">
+        <div class="context-block">
+            <h2>🧠 ¿Qué es la neuroventa?</h2>
+            <p>Las neuroventas aplican los conocimientos de la neurociencia para entender cómo el socio toma decisiones de crédito. A diferencia del modelo tradicional —que se centra en tasas, plazos y condiciones— la neuroventa se enfoca en <strong>conectar con lo que el socio realmente necesita</strong>, aunque no siempre lo diga con palabras.<br><br>
+            No es manipulación. Es escuchar mejor, hablar diferente y construir una relación donde el socio sienta que lo estás ayudando, no vendiendo.</p>
+        </div>
+        <div class="context-block">
+            <h2>🎯 ¿Para qué este test?</h2>
+            <p>Para que veas con honestidad cómo estás asesorando hoy a tus socios. No hay respuestas correctas ni incorrectas: lo que importa es <strong>cómo actúas realmente</strong> en el día a día, no cómo crees que deberías actuar.<br><br>
+            Al terminar tendrás un diagnóstico claro de tus fortalezas y las áreas donde más puedes crecer como asesor de crédito.</p>
+        </div>
+        <div class="pills-row">
+            <span class="pill">⏱ 10–15 minutos</span>
+            <span class="pill">📋 20 preguntas</span>
+            <span class="pill">📊 5 dimensiones</span>
+            <span class="pill">📥 Resultado personalizado</span>
+        </div>
+        <h3 style="color:var(--azul);font-size:.97rem;font-weight:700;margin-bottom:1rem;">Ingresa tus datos para comenzar:</h3>
+        <div class="form-group">
+            <label for="inp-name">Nombre completo *</label>
+            <input type="text" id="inp-name" placeholder="Tu nombre completo">
+            <div class="error-msg" id="err-name">Por favor ingresa tu nombre</div>
+        </div>
+        <div class="form-group">
+            <label for="inp-email">Correo electrónico *</label>
+            <input type="email" id="inp-email" placeholder="tu@correo.com">
+            <div class="error-msg" id="err-email">Por favor ingresa un correo válido</div>
+        </div>
+        <div class="form-group">
+            <label for="inp-inst">Cooperativa o institución *</label>
+            <input type="text" id="inp-inst" placeholder="Nombre de tu cooperativa">
+            <div class="error-msg" id="err-inst">Por favor ingresa tu institución</div>
+        </div>
+        <button class="btn btn-primary" onclick="startTest()">Comenzar Test &rarr;</button>
+        <div class="copyright">Propiedad intelectual de Maria Alejandra Urdaneta, todos los derechos reservados.</div>
+    </div>
+</div>
+
+<!-- ═══════════ TEST ═══════════ -->
+<div id="screen-test" class="hidden">
+    <div class="header">
+        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png" alt="NeuroWellness Learning"></div>
+        <h1>Test de Neuroventas</h1>
+        <p>Responde desde cómo actúas realmente, no desde la respuesta "correcta"</p>
+    </div>
+    <div class="card">
+        <div class="progress-wrap">
+            <div class="progress-text" id="prog-text">0 de 20 respondidas</div>
+            <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+        </div>
+        <div id="questions-wrap"></div>
+        <button class="btn btn-primary" style="margin-top:1.5rem;" onclick="submitTest()">Ver Mis Resultados &rarr;</button>
+    </div>
+</div>
+
+<!-- ═══════════ RESULTADOS ═══════════ -->
+<div id="screen-results" class="hidden">
+    <div class="header">
+        <div class="logo-wrap"><img src="https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png" alt="NeuroWellness Learning"></div>
+        <div class="header-label">Tus Resultados</div>
+        <h1>Tu Estilo de Venta</h1>
+        <p>Análisis personalizado basado en tus respuestas</p>
+    </div>
+    <div class="card">
+
+        <div class="result-hero">
+            <div class="result-emoji" id="res-emoji"></div>
+            <div class="result-profile" id="res-profile"></div>
+            <h2 id="res-title"></h2>
+            <div class="result-score" id="res-score"></div>
+        </div>
+
+        <div class="result-section">
+            <h3>📋 Análisis general</h3>
+            <p id="res-general"></p>
+        </div>
+
+        <div class="chart-wrap">
+            <h3>📊 Tu perfil por dimensiones</h3>
+            <canvas id="radar-chart" style="max-height:420px;"></canvas>
+        </div>
+
+        <div class="result-section">
+            <h3>🎯 Recomendaciones prácticas por área</h3>
+            <div id="res-recs"></div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-bottom:1rem;" onclick="downloadPDF()">📥 Descargar Resultado (PDF)</button>
+
+        <div class="wa-block">
+            <h3>¿Quieres profundizar en estas habilidades?</h3>
+            <p>Si quieres mayor información sobre cómo profundizar en el desarrollo de estas habilidades, haz clic aquí y conversemos.</p>
+            <a class="btn-wa" href="https://wa.me/34603777334?text=Hola%20Mariale!%20Acabo%20de%20hacer%20el%20Test%20de%20Neuroventas%20y%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20el%20programa" target="_blank">
+                💬 Escríbeme por WhatsApp
+            </a>
+        </div>
+
+        <button class="btn btn-secondary" onclick="resetTest()">🔄 Volver a hacer el test</button>
+        <div class="copyright">Propiedad intelectual de Maria Alejandra Urdaneta, todos los derechos reservados.</div>
+    </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+//  5 DIMENSIONES — cada una con max:8 min:-8 (4 preguntas × ±2)
+//  Puntaje total: -40 a +40
+// ─────────────────────────────────────────────────────────────────────────────
+const DIMENSIONS = [
+    { key:'D1', label:'Mentalidad y Gestión Emocional',  icon:'🧭', max:8,  min:-8 },
+    { key:'D2', label:'Escucha Activa e Indagación',     icon:'👂', max:8,  min:-8 },
+    { key:'D3', label:'Empatía y Conexión',              icon:'❤️', max:8,  min:-8 },
+    { key:'D4', label:'Manejo de Objeciones',            icon:'🔑', max:8,  min:-8 },
+    { key:'D5', label:'Honestidad y Confianza',          icon:'✅', max:8,  min:-8 },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  ESCALA FORZADA DE 4 OPCIONES (sin neutro)
+//  Siempre=0 | Con frecuencia=1 | Pocas veces=2 | Nunca o casi nunca=3
+//
+//  scores[i]: valor según opción elegida
+//  Preguntas positivas (neuroventa):  [+2, +1, -1, -2]
+//  Preguntas negativas (tradicional): [-2, -1, +1, +2]
+// ─────────────────────────────────────────────────────────────────────────────
+const SCALE_LABELS = ['Siempre', 'Con frecuencia', 'Pocas veces', 'Nunca o casi nunca'];
+
+const QUESTIONS = [
+
+    // ── D1: MENTALIDAD Y GESTIÓN EMOCIONAL ──────────────────────────────────
+
+    // P1 — Creencia encubierta: el socio como medio vs. como fin
+    // No es obvia: un asesor tradicional puede responder "el crédito correcto" creyendo que eso es lo que hace.
+    { id:1, dim:'D1',
+      text:'Cuando un socio entra a tu oficina, ¿en qué piensas primero?',
+      scores:[-2,-1,+1,+2],
+      opciones:['En cómo cerrar el crédito hoy','En qué producto le podría ofrecer','En qué lo habrá traído hasta aquí','En entender su situación antes de pensar en cualquier producto'] },
+
+    // P2 — Regulación emocional bajo presión de meta
+    // Directa pero no juzga: todos sienten presión, la pregunta es cómo responden.
+    { id:2, dim:'D1',
+      text:'Cuando llevas varios días sin colocar un crédito y entra un socio con perfil aprobable, ¿qué pasa en tu cabeza?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Siento alivio y busco cerrar lo antes posible','Me enfoco en el producto que más fácil le puedo aprobar','Trato de atenderlo igual que siempre aunque la presión esté ahí','Me tomo un momento para escucharlo bien antes de pensar en la aprobación'] },
+
+    // P3 — Reacción ante el no: ¿el asesor lo toma como fracaso?
+    { id:3, dim:'D1',
+      text:'Un socio que atendiste bien decide no tomar el crédito por ahora. ¿Cómo lo vives?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Me frustra, siento que perdí el tiempo','Me queda la duda de si hice algo mal','Lo acepto, aunque prefiero cuando sí cierran','Lo veo como una atención válida: si no era el momento, no era el momento'] },
+
+    // P4 — Creencia sobre qué es una buena atención
+    // Capta si el asesor mide su éxito por el cierre o por el valor entregado.
+    { id:4, dim:'D1',
+      text:'Para ti, una atención exitosa es aquella en la que...',
+      scores:[-2,-1,+1,+2],
+      opciones:['El socio firma el crédito ese día','El socio queda interesado aunque no firme hoy','El socio entiende bien sus opciones y se va con claridad','El socio confía en mí, haya tomado el crédito o no'] },
+
+    // ── D2: ESCUCHA ACTIVA E INDAGACIÓN ─────────────────────────────────────
+
+    // P5 — Distinguir querer vs. necesitar: el núcleo del test
+    // Esta es la pregunta más importante. Un asesor tradicional dice "le doy lo que pide".
+    { id:5, dim:'D2',
+      text:'Un socio llega y te dice: "Quiero un crédito de 10 millones para el negocio." ¿Qué haces primero?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Reviso si califica para ese monto y arranco el trámite','Le explico las condiciones del crédito productivo','Le pregunto qué necesita hacer con ese dinero exactamente','Le pregunto cómo está el negocio antes de hablar de cualquier monto'] },
+
+    // P6 — Ofrecer antes de indagar: el error más frecuente
+    // Capta el patrón de ir al producto antes de entender al socio.
+    { id:6, dim:'D2',
+      text:'Cuando un socio termina de contarte para qué quiere el dinero, ¿qué tan seguido ya tienes en mente el producto que le vas a ofrecer antes de hacerle más preguntas?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Casi siempre, con la experiencia ya uno sabe','Con frecuencia, el producto suele ser obvio','A veces, depende del caso','Pocas veces — prefiero hacer más preguntas antes de decidir qué ofrecerle'] },
+
+    // P7 — Comunicación indagativa: ¿pregunta para entender o para confirmar?
+    // Capta si las preguntas son de verdad o son para justificar lo que ya decidió ofrecer.
+    { id:7, dim:'D2',
+      text:'Cuando le haces preguntas a un socio durante la atención, ¿cuál es tu intención real la mayoría de las veces?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Obtener los datos que necesito para el formulario','Confirmar que el producto que tengo en mente le encaja','Entender bien su situación antes de pensar en cualquier solución','Descubrir algo que él quizás no me ha dicho todavía'] },
+
+    // P8 — Leer lenguaje no verbal: ¿el asesor lo hace?
+    // No obvia: requiere que el asesor sea honesto sobre si presta atención más allá de las palabras.
+    { id:8, dim:'D2',
+      text:'Durante una atención, ¿con qué frecuencia prestas atención a cómo reacciona el socio físicamente — si se tensa, si duda, si se muestra incómodo — además de lo que dice?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Pocas veces, me concentro en lo que dice','A veces lo noto pero no siempre actúo en consecuencia','Con frecuencia, lo uso para ajustar cómo sigo la conversación','Siempre — el lenguaje del cuerpo me dice tanto como las palabras'] },
+
+    // ── D3: EMPATÍA Y CONEXIÓN ───────────────────────────────────────────────
+
+    // P9 — El socio como tomador de producto vs. como persona con contexto
+    // Capta si el asesor ve al socio como un caso o como una persona con historia.
+    { id:9, dim:'D3',
+      text:'Un socio que ya ha tomado créditos antes llega a pedir uno nuevo. ¿Qué tan seguido le preguntas cómo le fue con el crédito anterior antes de hablar del nuevo?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Casi nunca, eso ya pasó y no cambia lo que necesita hoy','A veces, si la conversación llega ahí sola','Con frecuencia, me ayuda a entender mejor su situación','Siempre — ese historial me dice mucho sobre lo que realmente necesita'] },
+
+    // P10 — Leer lo que el socio no dice: señales de duda o freno
+    { id:10, dim:'D3',
+      text:'Un socio escucha tus condiciones, asiente con la cabeza pero no hace más preguntas ni muestra entusiasmo. ¿Qué haces?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Avanzo con el proceso, si no pregunta es porque está de acuerdo','Le pregunto si tiene alguna duda sobre las condiciones','Le pregunto directamente cómo se siente con lo que le expliqué','Le doy espacio y le pregunto qué parte le genera más dudas o le preocupa'] },
+
+    // P11 — Presión de meta vs. atención de calidad
+    // Todos sienten la presión. La pregunta es si la dejan cambiar cómo tratan al socio.
+    { id:11, dim:'D3',
+      text:'En días de alta presión por metas, ¿cómo cambia tu forma de atender a los socios?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Voy más rápido al grano para ver si cierro o no y paso al siguiente','Trato de ser más eficiente aunque a veces descuido la escucha','Intento mantener la misma calidad aunque me cueste más','La presión no cambia mi forma de atender — cada socio merece lo mismo'] },
+
+    // P12 — Adaptación al tipo de socio: ¿el asesor lo hace conscientemente?
+    { id:12, dim:'D3',
+      text:'Un socio llega por primera vez a pedir un microcrédito y claramente no conoce bien los términos financieros. ¿Cómo ajustas tu atención?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Le explico el producto con los términos estándar para que aprenda','Simplifico un poco el lenguaje pero mantengo el proceso normal','Cambio completamente mi forma de explicar y me aseguro de que entienda cada paso','Primero le pregunto qué sabe y qué no antes de explicarle nada'] },
+
+    // ── D4: MANEJO DE OBJECIONES ─────────────────────────────────────────────
+
+    // P13 — Reacción ante comparación de tasa: el escenario más frecuente
+    // Capta si entra en modo defensivo o en modo curioso.
+    { id:13, dim:'D4',
+      text:'Un socio te dice: "En el banco X me ofrecen una tasa más baja." ¿Cuál es tu primera reacción?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Explico por qué nuestra tasa es competitiva o qué ventajas tenemos','Le pregunto cuánto es la diferencia y trato de mostrar que igual nos conviene','Le pregunto qué otras condiciones le ofrecieron además de la tasa','Le pregunto qué es lo más importante para él al momento de elegir'] },
+
+    // P14 — Presionar vs. soltar: el dilema del cierre
+    // Capta si el asesor empuja o acompaña.
+    { id:14, dim:'D4',
+      text:'Un socio califica perfectamente para el crédito pero dice que quiere pensarlo unos días. ¿Qué haces?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Le recuerdo que las condiciones pueden cambiar para crear algo de urgencia','Le pregunto qué le falta por resolver para poder decidir','Le digo que lo espero y que estoy disponible cuando quiera volver','Le pregunto qué es lo que lo hace dudar — sin presión, con genuina curiosidad'] },
+
+    // P15 — Objeción como señal: ¿el asesor la lee bien?
+    { id:15, dim:'D4',
+      text:'Cuando un socio pone una objeción, ¿qué pasa por tu mente en ese momento?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Que no quiere o que no está listo','Que debo responderla bien para no perder el cierre','Que hay algo que no entendió bien y debo explicar mejor','Que me está dando información sobre lo que le preocupa y debo escuchar más'] },
+
+    // P16 — Señales de sobreendeudamiento: la prueba de honestidad más difícil
+    // Directa pero con tacto: plantea una situación real sin juzgar.
+    { id:16, dim:'D4',
+      text:'Revisando el perfil de un socio, notas indicios de que ya tiene un nivel de deuda alto. El crédito igual califica técnicamente. ¿Qué haces?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Proceso el crédito — si califica, califica','Menciono los indicios brevemente pero dejo que él decida','Hablo con el socio sobre su situación de deuda antes de avanzar','Le hago preguntas para entender si realmente este crédito le conviene ahora'] },
+
+    // ── D5: HONESTIDAD Y CONFIANZA ───────────────────────────────────────────
+
+    // P17 — Querer vs. necesitar: la prueba definitiva de orientación al socio
+    // Capta si el asesor diferencia lo que el socio pide de lo que le conviene.
+    { id:17, dim:'D5',
+      text:'Un socio llega convencido de que necesita el monto máximo que le pueden aprobar. Revisando su situación, ves que un monto menor le conviene más. ¿Qué haces?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Le apruebo lo que pide — él sabe lo que necesita','Le comento que hay otras opciones pero respeto su decisión','Le explico con números por qué el monto menor le conviene más','Antes de cualquier monto, le pregunto para qué lo necesita exactamente y desde ahí lo oriento'] },
+
+    // P18 — Improvisar vs. reconocer lo que no sabe
+    { id:18, dim:'D5',
+      text:'Un socio te hace una pregunta técnica o legal sobre el crédito y no estás completamente seguro de la respuesta. ¿Qué haces?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Respondo lo mejor que puedo con lo que sé para no mostrar inseguridad','Doy una respuesta general y cambio el tema hacia lo que sí domino','Le digo que voy a verificar y le confirmo hoy mismo con exactitud','Le digo que no tengo la respuesta exacta en este momento y que prefiero confirmársela antes de que tome una decisión'] },
+
+    // P19 — Confianza como activo: ¿el asesor lo vive así?
+    // No obvia: plantea la tensión real entre perder una venta y mantener la confianza.
+    { id:19, dim:'D5',
+      text:'Ves que el producto que el socio quiere no es el que más le conviene, pero sería fácil de vender y necesitas los números este mes. ¿Qué pesa más en tu decisión?',
+      scores:[-2,-1,+1,+2],
+      opciones:['La meta — al final el socio tomó su decisión','Los dos pesan igual y eso me genera conflicto','La relación con el socio — prefiero orientarlo bien aunque no cierre hoy','La confianza a largo plazo — un socio bien asesorado vuelve y recomienda'] },
+
+    // P20 — Urgencia artificial: el cierre deshonesto más común
+    { id:20, dim:'D5',
+      text:'Para motivar a un socio que duda, ¿con qué frecuencia usas argumentos de urgencia como "solo tenemos cupo esta semana" o "esta tasa es especial por poco tiempo", aunque no sea completamente cierto?',
+      scores:[-2,-1,+1,+2],
+      opciones:['Con frecuencia — funciona y el socio igual queda contento','A veces, cuando siento que el socio necesita un empujón','Casi nunca — prefiero otros argumentos','Nunca — si tengo que mentir para cerrar, algo está mal en mi asesoría'] },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  PERFILES
+//  Puntaje total: -40 a +40
+//  Neuro-Vendedor Avanzado   : +21 a +40  (top 25% aprox.)
+//  Asesor en Transición      :  +5 a +20  (zona de desarrollo)
+//  Asesor Producto-Céntrico  : -10 a  +4  (zona de mayor frecuencia)
+//  Asesor en Modo Automático : -40 a -11  (zona de alerta)
+// ─────────────────────────────────────────────────────────────────────────────
+const PROFILES = [
+    {
+        min:21, max:40,
+        emoji:'🧠',
+        label:'Neuro-Asesor Avanzado',
+        general:'Estás en otro nivel. Asesoras desde la conexión genuina: tus socios no sienten que les estás vendiendo un crédito, sienten que los estás ayudando a tomar la mejor decisión. Ya aplicas de forma natural los principios de la neuroventa y eso se nota en la calidad de tus relaciones con los socios.',
+        recs:[
+            { icon:'🧭', area:'Mentalidad',   dim:'D1', texto:'Sigue preparándote mentalmente antes de cada atención. El día que sientas que "no estás para nadie", respira y recuerda que cada socio que entra tiene una historia que vale la pena escuchar.' },
+            { icon:'👂', area:'Escucha',      dim:'D2', texto:'Reta a hablar menos del 30% del tiempo. Si en una atención hablaste más que el socio, algo falló. El silencio después de una pregunta es poderoso: déjalo estar.' },
+            { icon:'❤️', area:'Empatía',      dim:'D3', texto:'Tu capacidad de leer al socio es tu mayor fortaleza. Sigue afinándola. Cuando sientas que algo no cuadra con lo que dice, pregunta con curiosidad genuina, no con desconfianza.' },
+            { icon:'🔑', area:'Objeciones',   dim:'D4', texto:'Conviértelas en tu fortaleza definitiva. Cuando te digan "está caro" o "lo voy a pensar", responde siempre con una pregunta: "¿qué está comparando?" o "¿sobre qué en particular quiere pensar?" y escucha con atención.' },
+            { icon:'✅', area:'Honestidad',   dim:'D5', texto:'No negocies este pilar por ninguna meta. Tu reputación en la cooperativa se construye atención a atención. Un socio al que le dijiste la verdad aunque no te convenía vuelve. Uno al que le prometiste algo que no cumpliste, no.' },
+        ]
+    },
+    {
+        min:5, max:20,
+        emoji:'⚖️',
+        label:'Asesor en Transición',
+        general:'Tienes un pie en el modelo tradicional y otro en la neuroventa. En algunos momentos conectas muy bien con el socio y logras una asesoría de calidad, pero en otros —especialmente cuando hay presión de meta— te gana la urgencia de cerrar. El potencial está ahí y es enorme.',
+        recs:[
+            { icon:'🧭', area:'Mentalidad',   dim:'D1', texto:'Antes de cada atención, repite en silencio: "Hoy vengo a entender, no a convencer". Esa sola frase cambia cómo escuchas, cómo preguntas y cómo el socio te percibe.' },
+            { icon:'👂', area:'Escucha',      dim:'D2', texto:'Practica la regla de los 3 minutos: no menciones monto, tasa ni plazo hasta que el socio haya hablado al menos 3 minutos seguidos. Si sientes el impulso de interrumpir, anota lo que quieres decir y espera.' },
+            { icon:'❤️', area:'Empatía',      dim:'D3', texto:'Cuando un socio llegue con prisa o con actitud cerrada, resiste el impulso de ir directo al negocio. Una pregunta simple como "¿cómo está el negocio este mes?" puede abrir una conversación completamente diferente.' },
+            { icon:'🔑', area:'Objeciones',   dim:'D4', texto:'Cuando te digan "lo voy a pensar", no lo des por perdido. Responde: "¿sobre qué en particular quiere pensar? así le ayudo con esa parte". Esa pregunta transforma un cierre fallido en información valiosa.' },
+            { icon:'✅', area:'Honestidad',   dim:'D5', texto:'Si no sabes algo, dilo. "Déjeme verificar eso con exactitud y le confirmo hoy mismo" genera más confianza que una respuesta improvisada. Los socios que más recomiendan a la cooperativa son los que confían en el asesor, no solo en el producto.' },
+        ]
+    },
+    {
+        min:-10, max:4,
+        emoji:'📢',
+        label:'Asesor Producto-Céntrico',
+        general:'Tu enfoque está en el crédito: en la tasa, el plazo y el cierre. Eres efectivo en el corto plazo, pero probablemente enfrentas muchos "lo voy a pensar", socios que se van sin decidir o que no regresan. No es falta de habilidad: es el modelo con el que aprendiste a vender, y se puede cambiar.',
+        recs:[
+            { icon:'🧭', area:'Mentalidad',   dim:'D1', texto:'Cambia tu meta diaria: de "cuántos créditos cierro" a "cuántos socios entienden hoy mejor su situación gracias a mí". Cuando eso cambia, paradójicamente los cierres también mejoran.' },
+            { icon:'👂', area:'Escucha',      dim:'D2', texto:'En las próximas 5 atenciones, proponte no mencionar ni tasa, ni plazo, ni monto hasta que el socio haya hablado al menos 5 minutos. Va a ser incómodo al principio. Aguanta la incomodidad.' },
+            { icon:'❤️', area:'Empatía',      dim:'D3', texto:'Practica hacer una sola pregunta personal al inicio: "¿Cómo ha estado el negocio últimamente?" y escucha de verdad. No para llenar tiempo, sino para entender desde dónde llega ese socio.' },
+            { icon:'🔑', area:'Objeciones',   dim:'D4', texto:'Cuando te digan "está caro", en lugar de justificar la tasa o buscar condiciones especiales, pregunta: "¿caro comparado con qué?" Deja que él responda. Esa respuesta te va a decir exactamente qué necesita escuchar.' },
+            { icon:'✅', area:'Honestidad',   dim:'D5', texto:'Revisa si en las últimas semanas prometiste algo que no pudiste cumplir. Si es así, reconócelo con ese socio en la próxima interacción. La honestidad tardía igual construye confianza.' },
+        ]
+    },
+    {
+        min:-40, max:-11,
+        emoji:'⚠️',
+        label:'Asesor en Modo Automático',
+        general:'La urgencia y la presión de meta gobiernan tus atenciones. Probablemente operas en piloto automático: entras, presentas el producto, intentas cerrar, y si no se da, pasas al siguiente. Los socios lo perciben aunque no lo digan. La buena noticia es que todo esto se puede cambiar, y no requiere años de práctica.',
+        recs:[
+            { icon:'🧭', area:'Mentalidad',   dim:'D1', texto:'Una sola cosa esta semana: antes de entrar a cada atención, respira 3 segundos. Tres segundos inhalando, tres exhalando. Eso activa tu corteza prefrontal y desactiva el modo urgencia. Hazlo en cada atención sin excepción.' },
+            { icon:'👂', area:'Escucha',      dim:'D2', texto:'Durante una semana, haz solo dos preguntas en cada atención: "¿cómo está el negocio?" y "¿qué es lo que más le preocupa en este momento?". Nada más. Solo escucha. No ofrezcas nada hasta que el socio haya terminado.' },
+            { icon:'❤️', area:'Empatía',      dim:'D3', texto:'Elige a un socio por día al que le prestes atención completa: sin pensar en la meta, sin apresurarte. Observa cómo cambia la conversación y cómo responde ese socio cuando siente que realmente lo estás escuchando.' },
+            { icon:'🔑', area:'Objeciones',   dim:'D4', texto:'Cada vez que un socio ponga una objeción, antes de responder di: "Cuénteme más de eso". Solo eso. Esa frase rompe el patrón defensivo del socio y te da información real sobre qué lo está frenando.' },
+            { icon:'✅', area:'Honestidad',   dim:'D5', texto:'Empieza por ser honesto contigo mismo: ¿estás dispuesto a cambiar la forma en que asesoras aunque al principio te cueste más trabajo? Esa decisión es el primer paso. Todo lo demás viene después.' },
+        ]
+    }
+];
+
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwv7DPa5HGlVO_xJVAu6SC0aqBqFg39CqR810Wb4lBXHQgP54joZNqun1yL1uqbNEkw/exec';
+
+// ─── ESTADO ───────────────────────────────────────────────────────────────────
+let userName='', userEmail='', userInst='';
+let answers = {};
+let radarChart = null;
+
+const el   = id => document.getElementById(id);
+const show = id => el(id).classList.remove('hidden');
+const hide = id => el(id).classList.add('hidden');
+
+// ─── INICIO ───────────────────────────────────────────────────────────────────
+function startTest(){
+    const name  = el('inp-name').value.trim();
+    const email = el('inp-email').value.trim();
+    const inst  = el('inp-inst').value.trim();
+    let ok = true;
+
+    el('err-name').style.display  = name  ? 'none' : 'block'; if(!name)  ok=false;
+    const emailOk = email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    el('err-email').style.display = emailOk ? 'none' : 'block'; if(!emailOk) ok=false;
+    el('err-inst').style.display  = inst  ? 'none' : 'block'; if(!inst)  ok=false;
+    if(!ok) return;
+
+    userName=name; userEmail=email; userInst=inst;
+    hide('screen-welcome'); show('screen-test');
+    renderQuestions();
+    window.scrollTo(0,0);
+}
+
+// ─── RENDER PREGUNTAS ─────────────────────────────────────────────────────────
+function renderQuestions(){
+    const wrap = el('questions-wrap');
+    wrap.innerHTML = '';
+    let lastDim = '';
+
+    QUESTIONS.forEach((q, idx) => {
+        if(q.dim !== lastDim){
+            lastDim = q.dim;
+            const dim = DIMENSIONS.find(d => d.key === q.dim);
+            const numDim = DIMENSIONS.findIndex(d => d.key === q.dim) + 1;
+            const sh = document.createElement('div');
+            sh.className = 'section-header';
+            sh.innerHTML = `
+                <div class="section-icon">${dim.icon}</div>
+                <div class="section-header-text">
+                    <h3>Dimensión ${numDim}</h3>
+                    <span>${dim.label}</span>
+                </div>`;
+            wrap.appendChild(sh);
+        }
+
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = `qcard-${q.id}`;
+
+        const labels = q.opciones || SCALE_LABELS;
+        const opts = labels.map((lbl,i) => `
+            <div class="scale-opt">
+                <input type="radio" id="q${q.id}o${i}" name="q${q.id}" value="${i}"
+                       onchange="recordAnswer(${q.id},'${q.dim}',${q.scores[i]})">
+                <label for="q${q.id}o${i}">${lbl}</label>
+            </div>`).join('');
+
+        card.innerHTML = `
+            <div class="q-top">
+                <div class="q-num">${idx+1}</div>
+                <div class="q-text">${q.text}</div>
+            </div>
+            <div class="scale-grid">${opts}</div>`;
+        wrap.appendChild(card);
+    });
+}
+
+function recordAnswer(qid, dim, score){
+    answers[qid] = {dim, score};
+    const card = el(`qcard-${qid}`);
+    if(card) card.classList.add('answered');
+    updateProgress();
+}
+
+function updateProgress(){
+    const done = Object.keys(answers).length;
+    el('prog-fill').style.width = (done / QUESTIONS.length * 100) + '%';
+    el('prog-text').textContent = `${done} de ${QUESTIONS.length} respondidas`;
+}
+
+// ─── CÁLCULO ──────────────────────────────────────────────────────────────────
+function calcResults(){
+    let total = 0;
+    const dimRaw = {D1:0, D2:0, D3:0, D4:0, D5:0};
+
+    QUESTIONS.forEach(q => {
+        const ans = answers[q.id];
+        if(ans){ total += ans.score; dimRaw[ans.dim] += ans.score; }
+    });
+
+    // Normalizar cada dimensión a 0–100
+    const dimNorm = {};
+    DIMENSIONS.forEach(d => {
+        dimNorm[d.key] = Math.max(0, Math.min(100,
+            Math.round(((dimRaw[d.key] - d.min) / (d.max - d.min)) * 100)
+        ));
+    });
+
+    // Perfil según puntaje total
+    const profile = PROFILES.find(p => total >= p.min && total <= p.max) || PROFILES[2];
+    return { total, dimRaw, dimNorm, profile };
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+function submitTest(){
+    if(Object.keys(answers).length < QUESTIONS.length){
+        const first = QUESTIONS.find(q => !answers[q.id]);
+        if(first) el(`qcard-${first.id}`).scrollIntoView({behavior:'smooth', block:'center'});
+        alert('Por favor responde todas las preguntas antes de continuar.');
+        return;
+    }
+    showResults(calcResults());
+}
+
+// ─── MOSTRAR RESULTADOS ───────────────────────────────────────────────────────
+function showResults(results){
+    hide('screen-test');
+    show('screen-results');
+
+    const p = results.profile;
+    el('res-emoji').textContent   = p.emoji;
+    el('res-profile').textContent = p.label;
+    el('res-title').textContent   = p.label;
+    el('res-score').textContent   = `Puntuación total: ${results.total} puntos (escala: -40 a +40)`;
+    el('res-general').textContent = p.general;
+
+    const recsEl = el('res-recs');
+    recsEl.innerHTML = '';
+    p.recs.forEach(rec => {
+        const pct = results.dimNorm[rec.dim];
+        const div = document.createElement('div');
+        div.className = 'rec-card';
+        div.innerHTML = `
+            <h4>${rec.icon} ${rec.area}
+                <span style="font-weight:400;color:var(--gris);font-size:.75rem;margin-left:.3rem;">— ${pct}%</span>
+            </h4>
+            <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+            <p>${rec.texto}</p>`;
+        recsEl.appendChild(div);
+    });
+
+    buildRadar(results.dimNorm);
+    sendToSheets(results);
+    window.scrollTo(0,0);
+}
+
+// ─── RADAR ────────────────────────────────────────────────────────────────────
+function buildRadar(norm){
+    if(radarChart){ radarChart.destroy(); radarChart=null; }
+    const ctx = el('radar-chart').getContext('2d');
+    radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: DIMENSIONS.map(d => d.label),
+            datasets:[{
+                label: 'Tu perfil',
+                data:  DIMENSIONS.map(d => norm[d.key]),
+                fill: true,
+                backgroundColor: 'rgba(155,109,128,0.18)',
+                borderColor: '#9B6D80',
+                pointBackgroundColor: '#9B6D80',
+                pointBorderColor: '#fff',
+                borderWidth: 2.5,
+                pointRadius: 5,
+            }]
+        },
+        options:{
+            responsive: true,
+            maintainAspectRatio: true,
+            layout:{ padding:{ top:10, bottom:10, left:10, right:10 } },
+            scales:{
+                r:{
+                    beginAtZero: true, max: 100,
+                    ticks:{ stepSize:20, font:{size:9, family:'Montserrat'} },
+                    pointLabels:{
+                        font:{ size:10, weight:'600', family:'Montserrat' },
+                        color:'#14233A',
+                        callback: val => {
+                            const words = val.split(' ');
+                            const lines = [];
+                            let line = '';
+                            words.forEach(w => {
+                                if((line+' '+w).trim().length > 16){
+                                    lines.push(line.trim());
+                                    line = w;
+                                } else {
+                                    line = (line+' '+w).trim();
+                                }
+                            });
+                            if(line) lines.push(line);
+                            return lines;
+                        }
+                    },
+                    grid:{ color:'#E6E2DE' },
+                    angleLines:{ color:'#E6E2DE' }
+                }
+            },
+            plugins:{
+                legend:{ display:false },
+                tooltip:{ callbacks:{ label: ctx => ctx.parsed.r+'%' } }
+            }
+        }
+    });
+}
+
+// ─── PDF ──────────────────────────────────────────────────────────────────────
+async function downloadPDF(){
+    if(!window.jspdf){ alert('Recarga la página e intenta de nuevo.'); return; }
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({unit:'mm', format:'a4'});
+    const results = calcResults();
+    const p = results.profile;
+
+    // Header
+    doc.setFillColor(20,35,58);
+    doc.rect(0,0,210,35,'F');
+    try {
+        const b = await fetch('https://urdanetamariale-neurowellness.github.io/test-neuroventa/logo.png').then(r=>r.blob());
+        doc.addImage(await blobToB64(b),'PNG',155,5,42,26);
+    } catch(e){}
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(15); doc.setFont(undefined,'bold');
+    doc.text('TEST DE NEUROVENTAS',15,13);
+    doc.setFontSize(9); doc.setFont(undefined,'normal');
+    doc.text('Tu estilo de venta: ¿Tradicional o Neuroventa?',15,20);
+    doc.setFontSize(8); doc.setTextColor(233,200,200);
+    doc.text(`${userName}  |  ${userInst}`,15,27);
+
+    let y = 42;
+
+    // Perfil box
+    doc.setFillColor(247,244,241);
+    doc.roundedRect(15,y,180,28,2,2,'F');
+    doc.setTextColor(20,35,58); doc.setFontSize(13); doc.setFont(undefined,'bold');
+    doc.text(`${p.emoji}  ${p.label}`,20,y+9);
+    doc.setFontSize(8); doc.setFont(undefined,'normal'); doc.setTextColor(155,109,128);
+    doc.text(`Puntuación total: ${results.total} puntos (escala -40 a +40)`,20,y+16);
+    const genLines = doc.splitTextToSize(p.general,165);
+    doc.setTextColor(74,77,83);
+    doc.text(genLines,20,y+22);
+    y += Math.max(32, genLines.length*4+24);
+
+    // Recomendaciones
+    doc.setFontSize(10); doc.setFont(undefined,'bold'); doc.setTextColor(20,35,58);
+    doc.text('Recomendaciones prácticas por área',15,y); y+=7;
+
+    p.recs.forEach(rec => {
+        if(y > 262){ doc.addPage(); y=20; }
+        const pct = results.dimNorm[rec.dim];
+        const recLines = doc.splitTextToSize(rec.texto, 158);
+        const boxH = recLines.length*4+16;
+        doc.setFillColor(247,244,241);
+        doc.roundedRect(15,y,180,boxH,1.5,1.5,'F');
+        doc.setFillColor(230,226,222);
+        doc.roundedRect(20,y+5,160,2.5,1,1,'F');
+        doc.setFillColor(155,109,128);
+        doc.roundedRect(20,y+5,Math.round(160*pct/100),2.5,1,1,'F');
+        doc.setFontSize(8); doc.setFont(undefined,'bold'); doc.setTextColor(155,109,128);
+        doc.text(`${rec.area}  —  ${pct}%`,20,y+12);
+        doc.setFont(undefined,'normal'); doc.setTextColor(74,77,83);
+        doc.text(recLines,20,y+18);
+        y += boxH+4;
+    });
+
+    // Footer
+    doc.setFontSize(6); doc.setTextColor(150,150,150);
+    doc.text('© Propiedad intelectual de Maria Alejandra Urdaneta, todos los derechos reservados.',105,290,{align:'center'});
+    doc.text('@neuromariale  |  +34 603 777 334',105,294,{align:'center'});
+
+    doc.save(`Resultado-Neuroventas-${userName.replace(/\s+/g,'-')}.pdf`);
+}
+
+function blobToB64(blob){
+    return new Promise(res => {
+        const r = new FileReader(); r.onloadend=()=>res(r.result); r.readAsDataURL(blob);
+    });
+}
+
+// ─── RESET ────────────────────────────────────────────────────────────────────
+function resetTest(){
+    answers = {};
+    if(radarChart){ radarChart.destroy(); radarChart=null; }
+    hide('screen-results'); show('screen-welcome');
+    ['inp-name','inp-email','inp-inst'].forEach(id => el(id).value='');
+    window.scrollTo(0,0);
+}
+
+// ─── GOOGLE SHEETS ────────────────────────────────────────────────────────────
+function sendToSheets(results){
+    if(!GOOGLE_SCRIPT_URL) return;
+    const dimLabels = {};
+    DIMENSIONS.forEach(d => dimLabels[d.label] = results.dimNorm[d.key]);
+    fetch(GOOGLE_SCRIPT_URL,{
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            nombre:      userName,
+            email:       userEmail,
+            institucion: userInst,
+            perfil:      results.profile.label,
+            puntaje:     results.total,
+            dimensiones: dimLabels,
+        })
+    }).catch(e => console.error('Sheets:',e));
+}
+</script>
+</body>
+</html>
